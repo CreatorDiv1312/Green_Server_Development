@@ -1,0 +1,16 @@
+Componenets being used:
+
+Esp 32 wrom
+Ir Sensor
+gun fire (Model to be coinfirmed by raj)
+Capacitive soil moisturre 
+PIR (Size to be checked by raj)
+BMP Sensor
+Neo 6M
+Solar Panel
+Eps32 Cam 
+UV Sensor
+Sim800L 
+Battery li ion 18605 (Non Renewable for Jungle )
+Tp4056 (Charging socket Renewable or jungle )
+DHT 11 (  SENSOR RECORDINGS)
