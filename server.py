@@ -21,6 +21,9 @@ def init_db():
                 pir_motion REAL,
                 ir_detect REAL,
                 gunfire INTEGER,
+                CO_Quality REAL,
+                AIR_Quality REAL,
+                RAIN_Sensing REAL,
                 gps_lat REAL,
                 gps_lon REAL,
                 timestamp TEXT
@@ -53,8 +56,8 @@ def upload_data():
             INSERT INTO sensor_data (
                 temperature, humidity, pressure, altitude,
                 soil_moisture, uv_index, pir_motion, ir_detect,
-                gunfire, gps_lat, gps_lon, timestamp
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                gunfire,CO_Quality,AIR_Quality,RAIN_Sensing, gps_lat, gps_lon, timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             data.get("temperature"),
             data.get("humidity"),
@@ -65,6 +68,9 @@ def upload_data():
             data.get("pir_motion"),
             data.get("ir_detect"),
             data.get("gunfire"),
+            data.get("CO_Quality"),
+            data.get("AIR_Quality"),
+            data.get("RAIN_Sensing"),
             data.get("gps_lat"),
             data.get("gps_lon"),
             datetime.now().isoformat()
