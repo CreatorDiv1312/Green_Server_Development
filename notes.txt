@@ -1,0 +1,6 @@
+Temperature > 40 deggree celsisus
+Humidity < 20%
+Pressure < 950 or >1050
+UV Index > 7
+Gun Fire = 1
+Rain Sensing = 1
