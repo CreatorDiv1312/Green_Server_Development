@@ -46,6 +46,8 @@
 
 #include <Arduino.h>
 #include <TinyGPSPlus.h>
+#include <Wire.h>
+#include <Adafruit_BMP280.h>
 
 // ----------------------- PIN CONFIG -----------------------
 #define SOIL_PIN   27
@@ -71,6 +73,7 @@ HardwareSerial SensorSerial(2);   // UART2 → ESP32-CAM
 HardwareSerial GPSSerial(1);      // UART1 → NEO-6M GPS
 HardwareSerial SIMSerial(0);      // UART0 → SIM800L
 TinyGPSPlus gps;
+Adafruit_BMP280 bmp;              // BMP280 object
 
 // ----------------------- SETUP ----------------------------
 void setup() {
@@ -78,11 +81,19 @@ void setup() {
   SensorSerial.begin(9600, SERIAL_8N1, CAM_RX, CAM_TX);
   GPSSerial.begin(9600, SERIAL_8N1, GPS_RX, GPS_TX);
   SIMSerial.begin(9600, SERIAL_8N1, SIM_RX, SIM_TX);
+  Wire.begin(21, 22); // SDA=21, SCL=22
 
   pinMode(VIB_PIN, INPUT);
   pinMode(GUN_PIN, INPUT);
 
-  Serial.println("ESP32-WROOM Multi-Sensor Node Initialized (PIR, IR, DHT removed)");
+  Serial.println("ESP32-WROOM Multi-Sensor Node Initialized");
+
+  // ---- Initialize BMP280 ----
+  if (!bmp.begin(0x76)) { // Try address 0x76; if not, change to 0x77
+    Serial.println(" BMP280 not found. Check wiring!");
+  } else {
+    Serial.println("BMP280 sensor initialized.");
+  }
 }
 
 // ----------------------- LOOP -----------------------------
@@ -112,6 +123,14 @@ void loop() {
     lon = String(gps.location.lng(), 6);
   }
 
+  // ---- BMP280 Readings ----
+  float bmpTemp = NAN, bmpPressure = NAN, bmpAltitude = NAN;
+  if (bmp.begin(0x76)) {
+    bmpTemp = bmp.readTemperature();             // °C
+    bmpPressure = bmp.readPressure() / 100.0F;   // hPa
+    bmpAltitude = bmp.readAltitude(1013.25);     // meters (assuming sea level)
+  }
+
   // ---- Optional SIM800L Health Check ----
   SIMSerial.println("AT");
   delay(100);
@@ -130,7 +149,10 @@ void loop() {
       String(rainDigital) + "," +
       String(vibration) + "," +
       String(gun) + "," +
-      lat + "," + lon;
+      lat + "," + lon + "," +
+      String(bmpTemp, 2) + "," +
+      String(bmpPressure, 2) + "," +
+      String(bmpAltitude, 2);
 
   // ---- Send to ESP32-CAM ----
   SensorSerial.println(packet);
@@ -138,4 +160,3 @@ void loop() {
 
   delay(5000);  // every 5 seconds
 }
-
