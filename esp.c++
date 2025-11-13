@@ -20,7 +20,7 @@ HardwareSerial GPS_Serial(1);
 HardwareSerial SIM800L(2);
 
 // Replace with API endpoint is left
-const char* serverURL = "";
+const char* serverURL = "https://green-serve-1.onrender.com/upload";
 
 void setup() {
   Serial.begin(115200);
@@ -112,3 +112,4 @@ void sendDataToServer(String data) {
   SIM800L.println("AT+HTTPTERM");
   delay(500);
 }
+
