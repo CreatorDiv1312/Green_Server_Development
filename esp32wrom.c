@@ -48,17 +48,17 @@
 #include <TinyGPSPlus.h>
 
 // ----------------------- PIN CONFIG -----------------------
-#define SOIL_PIN   34
+#define SOIL_PIN   27
 #define UV_PIN     35
-#define MQ2_PIN    32
-#define MQ135_PIN  33
+#define MQ2_PIN    36
+#define MQ135_PIN  39
 #define RAIN_PIN   25   // Analog pin for rain sensor
 #define VIB_PIN    26   // Digital pin for vibration sensor
-#define GUN_PIN    14
+#define GUN_PIN    26
 
 // GPS and SIM800L UART configuration
-#define GPS_RX  4
-#define GPS_TX  15
+#define GPS_RX  2
+#define GPS_TX  4
 #define SIM_RX  16
 #define SIM_TX  17
 
@@ -138,3 +138,4 @@ void loop() {
 
   delay(5000);  // every 5 seconds
 }
+
