@@ -3,9 +3,9 @@
 #include <DHT.h>
 
 // ----------------------- PIN CONFIG -----------------------
-#define PIR_PIN  13
-#define IR_PIN   12
-#define DHT_PIN  15
+#define PIR_PIN  15
+#define IR_PIN   13
+#define DHT_PIN  14
 #define DHT_TYPE DHT11
 
 // ----------------------- OBJECTS --------------------------
@@ -117,5 +117,6 @@ void sendToServer(String csv) {
     Serial.println("Wi-Fi disconnected, unable to upload");
   }
 }
+
 
 
