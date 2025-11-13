@@ -1,11 +1,11 @@
 #include <Arduino.h>
 
-#define SOIL_PIN 34
+#define SOIL_PIN 27
 #define UV_PIN   35
-#define MQ2_PIN  32
-#define PIR_PIN  13
+#define MQ2_PIN  36
+#define PIR_PIN  39
 #define IR_PIN   12
-#define GUN_PIN  14
+#define GUN_PIN  26
 
 HardwareSerial SensorSerial(2); // use UART2
 // TX = 17, RX = 16 by default, but we’ll set custom pins in begin()
@@ -42,3 +42,4 @@ void loop() {
 
   delay(5000);  // every 5 seconds
 }
+
