@@ -1,19 +1,32 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <DHT.h>
 
-HardwareSerial CamSerial(1); // UART1 for sensor data
+// ----------------------- PIN CONFIG -----------------------
+#define PIR_PIN  13
+#define IR_PIN   12
+#define DHT_PIN  15
+#define DHT_TYPE DHT11
 
-// Wi-Fi credentials
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
+// ----------------------- OBJECTS --------------------------
+HardwareSerial CamSerial(1); // UART1 → RX=3, TX=1
+DHT dht(DHT_PIN, DHT_TYPE);
 
-// Backend endpoint
-const char* serverURL = "https://your-render-backend-url.onrender.com/upload"; 
+// ----------------------- WIFI CONFIG ----------------------
+const char* ssid = "WIFI_SSID";
+const char* password = "WIFI_PASSWORD";
+const char* serverURL = "https://your-render-backend-url.onrender.com/upload";
 
+// ----------------------- SETUP ----------------------------
 void setup() {
   Serial.begin(115200);
-  CamSerial.begin(9600, SERIAL_8N1, 3, 1); // RX=3, TX=1 as you said
+  CamSerial.begin(9600, SERIAL_8N1, 3, 1);
 
+  pinMode(PIR_PIN, INPUT);
+  pinMode(IR_PIN, INPUT);
+  dht.begin();
+
+  // Wi-Fi setup
   WiFi.begin(ssid, password);
   Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED) {
@@ -21,12 +34,15 @@ void setup() {
     Serial.print(".");
   }
   Serial.println("\nWi-Fi connected. IP: " + WiFi.localIP().toString());
+  Serial.println("ESP32-CAM ready to receive sensor data...");
 }
 
+// ----------------------- MAIN LOOP ------------------------
 void loop() {
   if (CamSerial.available()) {
     String dataLine = CamSerial.readStringUntil('\n');
     dataLine.trim();
+
     if (dataLine.length() > 0) {
       Serial.println("Received: " + dataLine);
       sendToServer(dataLine);
@@ -34,30 +50,57 @@ void loop() {
   }
 }
 
+// ----------------------- SEND TO SERVER -------------------
 void sendToServer(String csv) {
-  // Split CSV
+  // Expected CSV from WROOM:
+  // soil,uv,co,mq135,rainAnalog,rainDigital,vibration,gun,lat,lon
+
   float soil, uv, co, air;
-  int pir, ir, gun;
-  int count = sscanf(csv.c_str(), "%f,%f,%f,%f,%d,%d,%d",
-                     &soil, &uv, &co, &air, &pir, &ir, &gun);
-  if (count != 7) {
-    Serial.println("Invalid data format, skipping");
+  int rainAnalog, rainDigital, vibration, gun;
+  float lat, lon;
+
+  int count = sscanf(csv.c_str(), "%f,%f,%f,%f,%d,%d,%d,%d,%f,%f",
+                     &soil, &uv, &co, &air,
+                     &rainAnalog, &rainDigital, &vibration, &gun,
+                     &lat, &lon);
+
+  if (count != 10) {
+    Serial.println("Invalid CSV format, skipping");
     return;
   }
 
-  // --- Build JSON ---
+  // Local sensors on ESP32-CAM
+  int pir = digitalRead(PIR_PIN);
+  int ir = digitalRead(IR_PIN);
+  float temp = dht.readTemperature();
+  float hum = dht.readHumidity();
+
+  if (isnan(temp) || isnan(hum)) {
+    Serial.println("DHT read error, skipping this frame");
+    return;
+  }
+
+  // --- Build full JSON ---
   String json = "{";
   json += "\"soil_moisture\":" + String(soil, 2) + ",";
   json += "\"uv_index\":" + String(uv, 2) + ",";
   json += "\"CO_Quality\":" + String(co, 2) + ",";
-  json += "\"AIR_Quality\":" + String(air, 2) + ",";
+  json += "\"Air_Quality\":" + String(air, 2) + ",";
+  json += "\"rainAnalog\":" + String(rainAnalog) + ",";
+  json += "\"rainDigital\":" + String(rainDigital) + ",";
+  json += "\"vibration\":" + String(vibration) + ",";
+  json += "\"gunfire\":" + String(gun) + ",";
+  json += "\"latitude\":" + String(lat, 6) + ",";
+  json += "\"longitude\":" + String(lon, 6) + ",";
   json += "\"pir_motion\":" + String(pir) + ",";
   json += "\"ir_detect\":" + String(ir) + ",";
-  json += "\"gunfire\":" + String(gun);
+  json += "\"temperature\":" + String(temp, 2) + ",";
+  json += "\"humidity\":" + String(hum, 2);
   json += "}";
 
   Serial.println("Uploading JSON: " + json);
 
+  // --- Send HTTP POST ---
   if (WiFi.status() == WL_CONNECTED) {
     HTTPClient http;
     http.begin(serverURL);
@@ -71,6 +114,6 @@ void sendToServer(String csv) {
     }
     http.end();
   } else {
-    Serial.println("Wi-Fi not connected");
+    Serial.println("Wi-Fi disconnected, unable to upload");
   }
 }
