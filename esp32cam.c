@@ -15,7 +15,7 @@ DHT dht(DHT_PIN, DHT_TYPE);
 // ----------------------- WIFI CONFIG ----------------------
 const char* ssid = "WIFI_SSID";
 const char* password = "WIFI_PASSWORD";
-const char* serverURL = "https://https://green-serve-1.onrender.com//upload";
+const char* serverURL = "https://green-serve-1.onrender.com/upload";
 
 // ----------------------- SETUP ----------------------------
 void setup() {
@@ -117,4 +117,5 @@ void sendToServer(String csv) {
     Serial.println("Wi-Fi disconnected, unable to upload");
   }
 }
+
 
