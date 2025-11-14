@@ -44,10 +44,10 @@ const char* ssid = "WIFI_SSID";
 const char* password = "WIFI_PASSWORD";
 
 // Sensor JSON Upload URL
-const char* serverURL = "https://render-backend-url.onrender.com/upload";
+const char* serverURL = "https://green-serve-1.onrender.com/";
 
 // Camera Upload URL (FLASK)
-const char* cameraURL = "http://flask-server-ip:5000/camera";
+const char* cameraURL = "https://green-serve-1-i6mj.onrender.com/camera";
 
 // ---------------------------------------------------------
 // ------------------ CAMERA INITIALIZATION -----------------
@@ -226,3 +226,4 @@ void loop() {
     lastFrame = millis();
   }
 }
+
